@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Result - DermaScan{% endblock %}
+
+{% block content %}
+<div>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline" style="margin-bottom: 2rem;">&larr; Back to
+        Dashboard</a>
+
+    <div class="glass-panel">
+        <div
+            style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--glass-border); padding-bottom: 1.5rem;">
+            <div>
+                <h2 style="margin: 0 0 0.5rem 0;" class="gradient-text">Analysis Result</h2>
+                <div style="color: #8b949e; font-size: 0.9rem;">Analyzed on {{ prediction.timestamp.strftime('%B %d, %Y
+                    at %H:%M') }}</div>
+            </div>
+            <span class="risk-badge risk-{{ prediction.risk_level }}">{{ prediction.risk_level }}</span>
+        </div>
+
+        <div class="result-grid">
+            <!-- Left: Original Image -->
+            <div class="image-card">
+                <h3 style="margin-top: 0; margin-bottom: 1rem; text-align: center;">Original Image</h3>
+                <img src="{{ url_for('static', filename=prediction.original_image_path) }}" alt="Original Image">
+            </div>
+
+            <!-- Right: Grad-CAM Heatmap -->
+            <div class="image-card">
+                <h3 style="margin-top: 0; margin-bottom: 1rem; text-align: center;">AI Attention Map</h3>
+                {% if prediction.heatmap_image_path %}
+                <img src="{{ url_for('static', filename=prediction.heatmap_image_path) }}" alt="Grad-CAM Image">
+                <p style="font-size: 0.85rem; color: #8b949e; text-align: center; margin-top: 1rem;">
+                    The heatmap highlights the regions the AI focused on to make its prediction.
+                </p>
+                {% else %}
+                <div
+                    style="background: rgba(255,255,255,0.05); border-radius: 8px; height: 300px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #8b949e;">Heatmap not available</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="suggestions" style="margin-top: 3rem;">
+            <h3 style="margin-top: 0; color: #88d3ce;">Prediction Details</h3>
+            <div style="display: flex; gap: 4rem; margin-bottom: 2rem;">
+                <div>
+                    <div style="color: #8b949e; font-size: 0.9rem; margin-bottom: 0.2rem;">Predicted Condition</div>
+                    <div style="font-size: 1.2rem; font-weight: 600;">{{ prediction.class_name }}</div>
+                </div>
+                <div>
+                    <div style="color: #8b949e; font-size: 0.9rem; margin-bottom: 0.2rem;">AI Confidence</div>
+                    <div style="font-size: 1.2rem; font-weight: 600;">{{ "%.1f"|format(prediction.confidence * 100) }}%
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 0; color: #88d3ce;">Care Guidance</h3>
+            {% if prediction.risk_level == 'High' %}
+            <div class="alert alert-danger"
+                style="margin-bottom: 1rem; padding: 1rem; border-left: 4px solid #ff4b4b; background: rgba(255,75,75,0.1);">
+                <strong>URGENT:</strong> We highly recommend consulting a certified dermatologist immediately for a
+                professional diagnosis and care plan.
+            </div>
+            <ul>
+                <li>Do not attempt to treat the lesion yourself.</li>
+                <li>Avoid excessive sun exposure.</li>
+                <li>Keep a record of any changes in size, shape, or color.</li>
+            </ul>
+            {% elif prediction.risk_level == 'Medium' %}
+            <div class="alert alert-warning"
+                style="margin-bottom: 1rem; padding: 1rem; border-left: 4px solid #fca311; background: rgba(252,163,17,0.1);">
+                <strong>Advisory:</strong> This condition poses a moderate risk. Please schedule a check-up with a
+                dermatologist soon.
+            </div>
+            <ul>
+                <li>Monitor the lesion weekly using the ABCDE rule.</li>
+                <li>Apply broad-spectrum sunscreen when outdoors.</li>
+                <li>Seek medical advice if you notice rapid changes.</li>
+            </ul>
+            {% else %}
+            <div class="alert alert-success"
+                style="margin-bottom: 1rem; padding: 1rem; border-left: 4px solid #00b4d8; background: rgba(0,180,216,0.1);">
+                <strong>Low Risk:</strong> The analysis suggests a benign condition. However, AI is not a substitute for
+                professional medical advice.
+            </div>
+            <ul>
+                <li>Continue routine skin care and regular check-ups.</li>
+                <li>Practice sun protection to prevent future issues.</li>
+                <li>Consult a doctor if the lesion becomes painful or bleeds.</li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

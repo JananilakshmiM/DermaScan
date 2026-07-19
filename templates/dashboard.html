@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - DermaScan{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Upload Section -->
+    <div>
+        <div class="glass-panel" style="position: sticky; top: 100px;">
+            <h3 style="margin-top: 0; margin-bottom: 1rem;">New Analysis</h3>
+            <p style="font-size: 0.9rem; color: #8b949e; margin-bottom: 1.5rem;">
+                Upload a clear image of your skin lesion for AI analysis.
+            </p>
+            <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+                <div class="upload-area">
+                    <input type="file" id="file-upload" name="file" accept="image/png, image/jpeg, image/jpg" required>
+                    <div style="font-size: 2rem; color: #88d3ce; margin-bottom: 1rem;">+</div>
+                    <div>Drag & drop an image or click to browse</div>
+                </div>
+
+                <div id="preview-container">
+                    <img id="image-preview" src="" alt="Image Preview">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">Analyze
+                    Image</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- History Section -->
+    <div>
+        <h2
+            style="margin-top: 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            Your History</h2>
+
+        {% if history %}
+        <div class="history-list">
+            {% for item in history %}
+            <a href="{{ url_for('result', result_id=item.id) }}" style="color: inherit;">
+                <div class="history-item">
+                    <img src="{{ url_for('static', filename=item.original_image_path) }}" class="history-img"
+                        alt="Lesion">
+                    <div class="history-info" style="flex: 1;">
+                        <div class="history-title">{{ item.class_name }}</div>
+                        <div class="history-meta">
+                            {{ item.timestamp.strftime('%Y-%m-%d %H:%M') }} &bull; Confidence: {{
+                            "%.1f"|format(item.confidence * 100) }}%
+                        </div>
+                    </div>
+                    <div>
+                        <span class="risk-badge risk-{{ item.risk_level }}">{{ item.risk_level }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-panel" style="text-align: center; padding: 3rem;">
+            <p style="color: #8b949e; margin: 0;">No previous analyses found. Upload an image to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
